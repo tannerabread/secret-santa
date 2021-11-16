@@ -1,0 +1,66 @@
+[
+  {
+    "id": 0,
+    "coupleId": 0,
+    "santa": "Alex",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 1,
+    "coupleId": 0,
+    "santa": "Mayling",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 2,
+    "coupleId": 1,
+    "santa": "Dusty",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 3,
+    "coupleId": 1,
+    "santa": "Eri",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 4,
+    "coupleId": 2,
+    "santa": "Bannon",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 5,
+    "coupleId": 2,
+    "santa": "Hannah",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 6,
+    "coupleId": 3,
+    "santa": "Zach",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  },
+  {
+    "id": 7,
+    "coupleId": 3,
+    "santa": "Amélie",
+    "hasChosen": false,
+    "hasBeenChosen": false,
+    "chosee": ""
+  }
+]
