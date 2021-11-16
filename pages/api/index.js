@@ -3,11 +3,6 @@ import fs from 'fs'
 import path from 'path'
 
 export default function handler(req, res) {
-  if (req.method === 'GET') {
-    console.log('list', list)
-    res.status(200).json(list)
-  }
-
   if (req.method === 'PUT') {
     // process PUT request
     const body = req.body

@@ -50,10 +50,38 @@
 
 .grid {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   max-width: 800px;
+}
+
+.row {
+  width: 80%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.list {
+  font-size: calc(0.5rem + 1vw);
+  background-color: green;
+  color: white;
+  box-shadow: 0 0 5px white;
+  border: none;
+}
+
+.button {
+  font-size: calc(1rem + 2vw);
+  font-family: 'Mountains of Christmas', cursive;
+  background-color: green;
+  -webkit-text-stroke: 1px gold;
+  -webkit-text-fill-color: white;
+  text-shadow: 2px 2px black;
+  box-shadow: 0 0 5px white;
+  border: none;
 }
 
 @media (max-width: 600px) {
