@@ -1,7 +1,10 @@
 import Head from 'next/head'
 import React from 'react'
 import { useState, useEffect } from 'react'
+import useSWR from 'swr'
 import styles from '../styles/Home.module.css'
+
+const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Home() {
   const [people, setPeople] = useState()
@@ -9,21 +12,11 @@ export default function Home() {
   const [chosen, setChosen] = useState()
   const [error, setError] = useState()
 
+  const { data, err } = useSWR(`/api`, fetcher)
   useEffect(() => {
-    async function getSomeFancyData() {
-      try {
-        const res = await fetch(`/api`)
-        const data = await res.json()
-        console.log('fancy data', data)
-        setPeople(data)
-      } catch (error) {
-        console.error('Unable to fetch fancy data', error)
-        setError(error)
-      }
-    }
-
-    getSomeFancyData()
-  }, [])
+    if (data) setPeople(data)
+    if (err) setError(err)
+  }, [data, err])
 
   function forceFourth(remaining, id) {
     // check if one couple has had no choices yet
@@ -129,6 +122,7 @@ export default function Home() {
     return response.json()
   }
 
+  if (error) return <div>Failed to load DB</div>
   if (!people) return <div>Loading...</div>
 
   return (
