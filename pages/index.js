@@ -1,13 +1,29 @@
 import Head from 'next/head'
 import React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from '../styles/Home.module.css'
-import list from '../data/list.json'
 
 export default function Home() {
-  const [people, setPeople] = useState(list.map((name) => name))
+  const [people, setPeople] = useState()
   const selectRef = React.createRef()
   const [chosen, setChosen] = useState()
+  const [error, setError] = useState()
+
+  useEffect(() => {
+    async function getSomeFancyData() {
+      try {
+        const res = await fetch(`/api`)
+        const data = await res.json()
+        console.log('fancy data', data)
+        setPeople(data)
+      } catch (error) {
+        console.error('Unable to fetch fancy data', error)
+        setError(error)
+      }
+    }
+
+    getSomeFancyData()
+  }, [])
 
   function forceFourth(remaining, id) {
     // check if one couple has had no choices yet
@@ -31,7 +47,6 @@ export default function Home() {
     let remainingToPick = list.filter((p) => !p.hasChosen)
     // if 2 of these ^^ have the same coupleId and one has not been chosen, must return that one
     let coupleHash = {}
-    let duplicate = false
     for (let i = 0; i < remainingToPick.length; i++) {
       if (remainingToPick[i].coupleId in coupleHash) {
         let person1 = remainingToPick[i]
@@ -87,14 +102,18 @@ export default function Home() {
     setChosen(chosenOne.santa)
 
     // put request parameter update for the person that just picked
-    let chooserParams = people[id]
+    // let chooserParams = people[id]
+    let chooserParams
+    chooserParams.id = id
     chooserParams.hasChosen = true
     chooserParams.chosee = people[chosenOne.id].santa
     chooserParams.choseeCoupleId = people[chosenOne.id].coupleId
     postData(`/api`, chooserParams)
 
     // put request parameter update for the person that was chosen
-    let chosenParams = people[chosenOne.id]
+    // let chosenParams = people[chosenOne.id]
+    let chosenParams
+    chosenParams.id = chosenOne.id
     chosenParams.hasBeenChosen = true
     postData(`/api`, chosenParams)
   }
@@ -109,6 +128,8 @@ export default function Home() {
     })
     return response.json()
   }
+
+  if (!people) return <div>Loading...</div>
 
   return (
     <div className={styles.container}>
