@@ -18,7 +18,9 @@ export default function handler(req, res) {
 
     const dir = path.resolve('./data')
     fs.writeFileSync(dir + '/list.json', JSON.stringify(list, null, 2))
-
-    res.status(201).json(list)
+    res.setHeader('Content-Type', 'application/json')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Credentials', true)
+    res.status(200).json(list)
   }
 }
