@@ -54,6 +54,7 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
   max-width: 800px;
 }
 
@@ -62,15 +63,25 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
 }
 
 .list {
-  font-size: calc(0.5rem + 1vw);
+  margin-left: 30px;
+}
+
+.list,
+.option {
+  font-size: calc(0.5rem + 2vw);
+  font-family: 'Mountains of Christmas', cursive;
   background-color: green;
-  color: white;
-  box-shadow: 0 0 5px white;
+  -webkit-text-stroke: 1px gold;
+  -webkit-text-fill-color: white;
+  text-shadow: 2px 2px 3px black;
+  box-shadow: 0 0 10px white;
   border: none;
+  padding: 1rem;
+  color: white;
 }
 
 .button {
@@ -79,9 +90,10 @@
   background-color: green;
   -webkit-text-stroke: 1px gold;
   -webkit-text-fill-color: white;
-  text-shadow: 2px 2px black;
-  box-shadow: 0 0 5px white;
+  text-shadow: 2px 2px 3px black;
+  box-shadow: 0 0 10px white;
   border: none;
+  padding: 1rem;
 }
 
 @media (max-width: 600px) {
