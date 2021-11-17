@@ -35,7 +35,7 @@ export default function handler(req, res) {
       }
     } else {
       updateExpression = "set hasBeenChosen = :hbc"
-      expressionAV = { "hbc": `${body.hasBeenChosen}` }
+      expressionAV = { ":hbc": `${body.hasBeenChosen}` }
     }
 
     const params = {

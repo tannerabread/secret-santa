@@ -1,10 +1,7 @@
 import Head from 'next/head'
 import React from 'react'
 import { useState, useEffect } from 'react'
-import useSWR from 'swr'
 import styles from '../styles/Home.module.css'
-
-const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Home() {
   const [people, setPeople] = useState()
@@ -12,11 +9,22 @@ export default function Home() {
   const [chosen, setChosen] = useState()
   const [error, setError] = useState()
 
-  const { data, err } = useSWR(`/api`, fetcher)
   useEffect(() => {
-    if (data) setPeople(data)
-    if (err) setError(err)
-  }, [data, err])
+    async function getSomeFancyData() {
+      try {
+        const res = await fetch(`/api`)
+        const data = await res.json()
+        console.log('fancy data', data)
+        data.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+        setPeople(data)
+      } catch (error) {
+        console.error('Unable to fetch fancy data', error)
+        setError(error)
+      }
+    }
+
+    getSomeFancyData()
+  }, [])
 
   function forceFourth(remaining, id) {
     // check if one couple has had no choices yet
@@ -59,7 +67,7 @@ export default function Home() {
     // find current id for who is picking and the remaining people that have not been chosen
     let id = selectRef.current.selectedIndex
     let remaining = people.filter((p) => !p.hasBeenChosen)
-    if (list[id].hasChosen) {
+    if (people[id].hasChosen) {
       setChosen('YOU HAVE ALREADY PICKED')
       return
     }
@@ -96,7 +104,7 @@ export default function Home() {
 
     // put request parameter update for the person that just picked
     // let chooserParams = people[id]
-    let chooserParams
+    let chooserParams = {}
     chooserParams.id = id
     chooserParams.hasChosen = true
     chooserParams.chosee = people[chosenOne.id].santa
@@ -105,9 +113,10 @@ export default function Home() {
 
     // put request parameter update for the person that was chosen
     // let chosenParams = people[chosenOne.id]
-    let chosenParams
+    let chosenParams = {}
     chosenParams.id = chosenOne.id
     chosenParams.hasBeenChosen = true
+    console.log('chosenParams', chosenParams)
     postData(`/api`, chosenParams)
   }
 
@@ -122,7 +131,6 @@ export default function Home() {
     return response.json()
   }
 
-  if (error) return <div>Failed to load DB</div>
   if (!people) return <div>Loading...</div>
 
   return (
