@@ -4,7 +4,7 @@ export default function handler(req, res) {
   // process GET request
   if (req.method === 'GET') {
     const params = {
-      TableName: process.env.TABLE_NAME
+      TableName: process.env.DYNAMODB_TABLE_NAME
     }
     db.scan(params, function (err, data) {
       if (err) {
@@ -39,7 +39,7 @@ export default function handler(req, res) {
     }
 
     const params = {
-      TableName: process.env.TABLE_NAME,
+      TableName: process.env.DYNAMODB_TABLE_NAME,
       Key: {
         id: objIndex
       },
