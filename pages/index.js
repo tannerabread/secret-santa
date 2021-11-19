@@ -8,13 +8,12 @@ const fetcher = (url) => fetch(url).then((r) => r.json())
 
 export default function Home() {
   const { data: people, error } = useSWR('/api', fetcher)
-  console.log('people', people)
   const selectRef = React.createRef()
   const [chosen, setChosen] = useState()
 
   function forceFourth(remaining, id) {
     // check if one couple has had no choices yet
-    remaining = remaining.filter((p) => p.id !== id)
+    remaining = remaining.filter((p) => p.id !== id && p.partnerId !== id)
     let coupleHash = {}
     for (let i = 0; i < remaining.length; i++) {
       if (remaining[i].partnerId in coupleHash) {
@@ -69,16 +68,10 @@ export default function Home() {
     }
     // every other option
     else {
-      allowableList = people[people[id].partnerId].choseeCoupleId === null
-        ? people.filter(p => 
-            people[id].coupleId !== p.coupleId &&
-            !p.hasBeenChosen
-          )
-        : people.filter(p => 
-            people[id].coupleId !== p.coupleId &&
-            !p.hasBeenChosen &&
-            people[people[id].partnerId].choseeCoupleId !== p.coupleId
-          )
+      allowableList = people.filter(p => 
+        people[id].coupleId !== p.coupleId &&
+        !p.hasBeenChosen
+      )
     }
     
     // chooses a "random" person from those that are left
