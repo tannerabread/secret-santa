@@ -1,30 +1,35 @@
 import Head from 'next/head'
 import React from 'react'
 import { useState, useEffect } from 'react'
+import useSWR from 'swr'
 import styles from '../styles/Home.module.css'
 
+const fetcher = url => fetch(url).then(r => r.json())
+
 export default function Home() {
-  const [people, setPeople] = useState()
+  const { data: people, error } = useSWR('/api', fetcher)
+  console.log('people', people)
+  // const [people, setPeople] = useState()
   const selectRef = React.createRef()
   const [chosen, setChosen] = useState()
-  const [error, setError] = useState()
+  // const [error, setError] = useState()
 
-  useEffect(() => {
-    async function getSomeFancyData() {
-      try {
-        const res = await fetch(`/api`)
-        const data = await res.json()
-        console.log('fancy data', data)
-        data.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
-        setPeople(data)
-      } catch (error) {
-        console.error('Unable to fetch fancy data', error)
-        setError(error)
-      }
-    }
+  // useEffect(() => {
+  //   async function getSomeFancyData() {
+  //     try {
+  //       const res = await fetch(`/api`)
+  //       const data = await res.json()
+  //       console.log('fancy data', data)
+  //       data.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+  //       setPeople(data)
+  //     } catch (error) {
+  //       console.error('Unable to fetch fancy data', error)
+  //       setError(error)
+  //     }
+  //   }
 
-    getSomeFancyData()
-  }, [])
+  //   getSomeFancyData()
+  // }, [])
 
   function forceFourth(remaining, id) {
     // check if one couple has had no choices yet
@@ -103,18 +108,16 @@ export default function Home() {
     setChosen(chosenOne.santa)
 
     // put request parameter update for the person that just picked
-    // let chooserParams = people[id]
     let chooserParams = {}
-    chooserParams.id = id
+    chooserParams._id = people[id]._id
     chooserParams.hasChosen = true
     chooserParams.chosee = people[chosenOne.id].santa
     chooserParams.choseeCoupleId = people[chosenOne.id].coupleId
     postData(`/api`, chooserParams)
 
     // put request parameter update for the person that was chosen
-    // let chosenParams = people[chosenOne.id]
     let chosenParams = {}
-    chosenParams.id = chosenOne.id
+    chosenParams._id = chosenOne._id
     chosenParams.hasBeenChosen = true
     console.log('chosenParams', chosenParams)
     postData(`/api`, chosenParams)
@@ -122,7 +125,7 @@ export default function Home() {
 
   async function postData(url = '', data = {}) {
     const response = await fetch(url, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
