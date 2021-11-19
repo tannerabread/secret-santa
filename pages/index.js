@@ -1,10 +1,10 @@
 import Head from 'next/head'
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import useSWR from 'swr'
 import styles from '../styles/Home.module.css'
 
-const fetcher = url => fetch(url).then(r => r.json())
+const fetcher = (url) => fetch(url).then((r) => r.json())
 
 export default function Home() {
   const { data: people, error } = useSWR('/api', fetcher)
@@ -69,15 +69,18 @@ export default function Home() {
     }
     // every other option
     else {
-      allowableList = people.filter((p) => {
-        return (
-          people[id].coupleId !== p.coupleId &&
-          !p.hasBeenChosen &&
-          people[people[id].partnerId].choseeCoupleId !== p.coupleId
-        )
-      })
+      allowableList = people[people[id].partnerId].choseeCoupleId === null
+        ? people.filter(p => 
+            people[id].coupleId !== p.coupleId &&
+            !p.hasBeenChosen
+          )
+        : people.filter(p => 
+            people[id].coupleId !== p.coupleId &&
+            !p.hasBeenChosen &&
+            people[people[id].partnerId].choseeCoupleId !== p.coupleId
+          )
     }
-
+    
     // chooses a "random" person from those that are left
     let chosenOne
     if (allowableList.length === 1) {
@@ -86,6 +89,7 @@ export default function Home() {
       let random = Math.floor(Math.random() * allowableList.length)
       chosenOne = allowableList[random]
     }
+    console.log('chosenOne', chosenOne)
     setChosen(chosenOne.santa)
 
     // put request parameter update for the person that just picked
