@@ -9,27 +9,8 @@ const fetcher = url => fetch(url).then(r => r.json())
 export default function Home() {
   const { data: people, error } = useSWR('/api', fetcher)
   console.log('people', people)
-  // const [people, setPeople] = useState()
   const selectRef = React.createRef()
   const [chosen, setChosen] = useState()
-  // const [error, setError] = useState()
-
-  // useEffect(() => {
-  //   async function getSomeFancyData() {
-  //     try {
-  //       const res = await fetch(`/api`)
-  //       const data = await res.json()
-  //       console.log('fancy data', data)
-  //       data.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
-  //       setPeople(data)
-  //     } catch (error) {
-  //       console.error('Unable to fetch fancy data', error)
-  //       setError(error)
-  //     }
-  //   }
-
-  //   getSomeFancyData()
-  // }, [])
 
   function forceFourth(remaining, id) {
     // check if one couple has had no choices yet
@@ -50,7 +31,7 @@ export default function Home() {
     // if this sixth person is the last of the first 3 couples, and the last couple that hasn't chosen yet
     //    still has an available chosen, the sixth person must pick the available one from that couple
     // check if two of the entries are from the same couple
-    let remainingToPick = list.filter((p) => !p.hasChosen)
+    let remainingToPick = people.filter((p) => !p.hasChosen)
     // if 2 of these ^^ have the same coupleId and one has not been chosen, must return that one
     let coupleHash = {}
     for (let i = 0; i < remainingToPick.length; i++) {
