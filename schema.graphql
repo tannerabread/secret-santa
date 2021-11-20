@@ -18,4 +18,5 @@ type User {
 type Query {
   allUsers: [User]!
   user(id: Int): User
+  userByName(santa: String): [User]!
 }

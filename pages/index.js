@@ -24,13 +24,14 @@ export default function Home() {
     return remaining
   }
 
+  // also forceFifth because edge cases
   function forceSixth(remaining, id) {
     // check if one couple has not picked yet
     // if so, check that if this sixth person picks, it leaves the last 2 with valid choices
     // if this sixth person is the last of the first 3 couples, and the last couple that hasn't chosen yet
     //    still has an available chosen, the sixth person must pick the available one from that couple
     // check if two of the entries are from the same couple
-    let remainingToPick = people.filter((p) => !p.hasChosen)
+    let remainingToPick = people.filter((p) => !p.hasChosen && p.id !== id)
     // if 2 of these ^^ have the same coupleId and one has not been chosen, must return that one
     let coupleHash = {}
     for (let i = 0; i < remainingToPick.length; i++) {
@@ -61,10 +62,13 @@ export default function Home() {
     // edge case for 4th pick
     if (remaining.length === 5) {
       allowableList = forceFourth(remaining, id)
+      allowableList = allowableList.filter((p) => p.coupleId !== people[id].coupleId)
     }
-    // edge case for 6th pick
-    else if (remaining.length === 3) {
+    // edge case for 5th/6th pick
+    else if (remaining.length === 4 || remaining.length === 3) {
       allowableList = forceSixth(remaining, id)
+      console.log('initial allowableList', allowableList)
+      allowableList = allowableList.filter((p) => p.coupleId !== people[id].coupleId)
     }
     // every other option
     else {
@@ -73,7 +77,7 @@ export default function Home() {
         !p.hasBeenChosen
       )
     }
-    
+    console.log('allowableList', allowableList)
     // chooses a "random" person from those that are left
     let chosenOne
     if (allowableList.length === 1) {
