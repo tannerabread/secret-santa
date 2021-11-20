@@ -49,6 +49,33 @@ export default function Home() {
     return remaining
   }
 
+  // force 7th if one person hasn't picked and hasn't been picked
+  function forceSeventh(remaining, id) {
+    // check if out of the remaining there is one person who hasn't picked,
+    //    isn't the person picking,
+    //    and hasn't been chosen (hence in remaining)
+    remaining = remaining.filter(p => p.id !== id && p.coupleId !== people[id].coupleId)
+    let person
+    if (remaining.length === 2) {
+      if (
+        !remaining[0].hasChosen &&
+        !remaining[0].hasBeenChosen &&
+        remaining[0].id !== id &&
+        remaining[0].coupleId !== person[id].coupleId
+      ) {
+        return [remaining[0]]
+      } else if (
+        !remaining[1].hasChosen &&
+        !remaining[1].hasBeenChosen &&
+        remaining[1].id !== id &&
+        remaining[0].coupleId !== person[id].coupleId
+      ) {
+        return [remaining[1]]
+      }
+    }
+    return remaining
+  }
+
   function handleClick() {
     // find current id for who is picking and the remaining people that have not been chosen
     let id = selectRef.current.selectedIndex
@@ -62,19 +89,24 @@ export default function Home() {
     // edge case for 4th pick
     if (remaining.length === 5) {
       allowableList = forceFourth(remaining, id)
-      allowableList = allowableList.filter((p) => p.coupleId !== people[id].coupleId)
+      allowableList = allowableList.filter(
+        (p) => p.coupleId !== people[id].coupleId
+      )
     }
     // edge case for 5th/6th pick
     else if (remaining.length === 4 || remaining.length === 3) {
       allowableList = forceSixth(remaining, id)
       console.log('initial allowableList', allowableList)
-      allowableList = allowableList.filter((p) => p.coupleId !== people[id].coupleId)
+      allowableList = allowableList.filter(
+        (p) => p.coupleId !== people[id].coupleId
+      )
+    } else if (remaining.length === 2) {
+      allowableList = forceSeventh(remaining, id)
     }
     // every other option
     else {
-      allowableList = people.filter(p => 
-        people[id].coupleId !== p.coupleId &&
-        !p.hasBeenChosen
+      allowableList = people.filter(
+        (p) => people[id].coupleId !== p.coupleId && !p.hasBeenChosen
       )
     }
     console.log('allowableList', allowableList)
