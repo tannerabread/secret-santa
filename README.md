@@ -5,6 +5,7 @@
 * User cannot pick themselves or their partner. 
 * Users must all have a different choice. 
 * Users must all get chosen once every user has picked.
+* User cannot pick more than once.
 
 This project is designed for 8 people grouped into 4 couples to pick a secret santa for each other.
 
@@ -75,12 +76,12 @@ I attempted to solve this but then FaunaDB wanted me to write the custom functio
 Fork/clone this repository to your local machine then install dependencies:
 
 ```bash
-npm i
+npm install
 # or 
-yarn i
+yarn install
 ```
 
-First, run the development server:
+Then, run the development server:
 
 ```bash
 npm run dev
