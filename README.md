@@ -71,12 +71,12 @@ I attempted to solve this but then FaunaDB wanted me to write the custom functio
 Fork/clone this repository to your local machine then install dependencies:
 
 ```bash
-npm i
+npm install
 # or 
-yarn i
+yarn install
 ```
 
-First, run the development server:
+Then, run the development server:
 
 ```bash
 npm run dev
