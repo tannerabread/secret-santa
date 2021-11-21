@@ -5,6 +5,7 @@
 * User cannot pick themselves or their partner. 
 * Users must all have a different choice. 
 * Users must all get chosen once every user has picked.
+* User cannot pick more than once.
 
 This project is designed for 8 people grouped into 4 couples to pick a secret santa for each other.
 
