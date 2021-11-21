@@ -95,7 +95,7 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/](http://localhost:3000/api/). This endpoint can be edited in `pages/api/index.js`. This will show the current status of all users in the DB. This is also the endpoint that allows **POST** requests to the DB.
 
-[Dynamic API routes](https://nextjs.org/docs/api-routes/dynamic-api-routes) can be accessed on [http://localhost:3000/api/[santa_name](http:3000/api/name). This endpoint can be edited in `pages/api/[slug].js`. This allows users to check who they picked after leaving the page.
+[Dynamic API routes](https://nextjs.org/docs/api-routes/dynamic-api-routes) can be accessed on [http://localhost:3000/api/[santa_name]](http:3000/api/name). This endpoint can be edited in `pages/api/[slug].js`. This allows users to check who they picked after leaving the page.
 
 The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
