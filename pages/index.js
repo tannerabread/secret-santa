@@ -46,6 +46,18 @@ export default function Home() {
       }
       coupleHash[remainingToPick[i].coupleId] = i
     }
+
+    // edge case where 2 people are left unchosen from same couple
+    // one has chosen and other has not
+    // one of them must be chosen on 6th 
+    let remainingHash = {}
+    remaining = remaining.filter(p => p.id !== id)
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i].coupleId in remainingHash) {
+        return [remaining[i], remaining[remainingHash[remaining[i].coupleId]]]
+      }
+      remainingHash[remaining[i].coupleId] = i
+    }
     return remaining
   }
 

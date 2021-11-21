@@ -10,6 +10,8 @@ This project is designed for 8 people grouped into 4 couples to pick a secret sa
 
 It is not optimized for any other group size and would need to be modified to do so.
 
+It also does not always work. It works every time when I test it myself and as soon as a certain someone watches it breaks.
+
 ## Other Project/Algorithm Notes
 
 This project is also an example of bad planning, as when it was started it was assumed the chances of the outcome leaving the last person with only themself or their partner to pick from was slim.
@@ -22,6 +24,8 @@ This is the nature of secret santa though, and if done in person pulling names f
 What started as a *simple* project took many hours of refining and many tests to find edge cases without planning.
 
 This project could definitely use some refactoring, but as of now it seems to work 99% of the time, which is good enough for this year.
+
+It could definitely do with some sort of prediction algorithm that uses the available choices left to see what is possible to not ruin the end result without this mess of functions that probably has a lot of holes in it.
 
 ### Variable Names
 
