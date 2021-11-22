@@ -73,14 +73,14 @@ export default function Home() {
         !remaining[0].hasChosen &&
         !remaining[0].hasBeenChosen &&
         remaining[0].id !== id &&
-        remaining[0].coupleId !== person[id].coupleId
+        remaining[0].coupleId !== people[id].coupleId
       ) {
         return [remaining[0]]
       } else if (
         !remaining[1].hasChosen &&
         !remaining[1].hasBeenChosen &&
         remaining[1].id !== id &&
-        remaining[0].coupleId !== person[id].coupleId
+        remaining[1].coupleId !== people[id].coupleId
       ) {
         return [remaining[1]]
       }
