@@ -65,7 +65,7 @@ export default function Home () {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Tanner Family! 2023!! Secret Santa Picker!!!</h1>
-        <p className={styles.description}>Guaranteed to not let you pick your own partner's name!</p>
+        <p className={styles.description}>Guaranteed to not let you pick your own partners name!</p>
 
         <div className={styles.grid}>
           <div className={styles.row}>
