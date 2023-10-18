@@ -2,23 +2,22 @@ const { gql } = require('apollo-server-micro');
 
 const typeDefs = gql`
   type User {
-    id: ID!
     name: String!
     coupleId: Int!
-    partnerId: ID!
+    partnerId: ID
     hasChosen: Boolean!
     hasBeenChosen: Boolean!
-    choseeId: ID
+    choseeName: String
   }
 
   type Query {
     allUsers: [User!]!
-    userById(id: ID!): User
+    userByName(name: String!): User
   }
 
   type Mutation {
-    createUser(name: String!, coupleId: Int!, partnerId: ID!): User!
-    updateUserChoice(userId: ID!, choseeId: ID!): User!
+    createUser(name: String!, coupleId: Int!): User!
+    updateUserChoice(name: String!, choseeName: String!): User!
     resetChoices: Boolean!
   }
 `;

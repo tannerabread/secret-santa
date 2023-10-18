@@ -17,63 +17,81 @@ const resolvers = {
         throw new Error("Error fetching users: " + error.message);
       }
     },
-    userById: async (_, { id }) => {
+    userByName: async (_, { name }) => {
       try {
         const result = await client.query(
-          q.Get(q.Ref(q.Collection('User'), id))
+          q.Get(q.Ref(q.Collection('User'), name))
         );
         return result.data;
       } catch (error) {
-        throw new Error("Error fetching user by ID: " + error.message);
+        throw new Error("Error fetching user by name: " + error.message);
       }
     }
   },
   Mutation: {
-    createUser: async (_, { name, coupleId, partnerId }) => {
+    createUser: async (_, { name, coupleId }) => {
       try {
-        const result = await client.query(
-          q.Create(q.Collection('User'), {
-            data: {
-              name,
-              coupleId,
-              partnerId,
-              hasChosen: false,
-              hasBeenChosen: false,
-              choseeId: null
-            }
-          })
+        // Find a partner with the same coupleId
+        const partners = await client.query(
+          q.Paginate(q.Match(q.Index('users_by_coupleId'), coupleId))
         );
+        
+        const partnerRef = partners.data.length > 0 ? partners.data[0] : null;
+        const partner = partnerRef ? await client.query(q.Get(partnerRef)) : null;
+        
+        const newUser = {
+          name,
+          coupleId,
+          partnerId: partner && partner.ref ? partner.ref.id : null,
+          hasChosen: false,
+          hasBeenChosen: false,
+          choseeId: null
+        };
+
+        const result = await client.query(
+          q.Create(q.Collection('User'), { data: newUser })
+        );
+
+        // If a partner was found, update their partnerId to the new user's ID
+        if (partner) {
+          await client.query(
+            q.Update(partner.ref, {
+              data: { partnerId: result.ref.id }
+            })
+          );
+        }
+
         return result.data;
       } catch (error) {
         throw new Error("Error creating user: " + error.message);
       }
     },
-    updateUserChoice: async (_, { userId, choseeId }) => {
+    updateUserChoice: async (_, { name, choseeName }) => {
       // This is a bit more complex as it involves multiple operations.
       // For simplicity, I'm providing a basic version. You might need to add more checks and operations.
       try {
         const user = await client.query(
-          q.Get(q.Ref(q.Collection('User'), userId))
+          q.Get(q.Ref(q.Collection('User'), name))
         );
 
         const chosee = await client.query(
-          q.Get(q.Ref(q.Collection('User'), choseeId))
+          q.Get(q.Ref(q.Collection('User'), choseeName))
         );
 
         if (chosee.data.hasBeenChosen) throw new Error("Chosee has already been chosen by someone else");
         if (user.data.coupleId === chosee.data.coupleId) throw new Error("Cannot choose your partner");
 
         const updatedUser = await client.query(
-          q.Update(q.Ref(q.Collection('User'), userId), {
+          q.Update(q.Ref(q.Collection('User'), name), {
             data: {
               hasChosen: true,
-              choseeId: choseeId
+              choseeName: choseeName
             }
           })
         );
 
         await client.query(
-          q.Update(q.Ref(q.Collection('User'), choseeId), {
+          q.Update(q.Ref(q.Collection('User'), choseeName), {
             data: {
               hasBeenChosen: true
             }
@@ -95,7 +113,7 @@ const resolvers = {
               data: {
                 hasChosen: false,
                 hasBeenChosen: false,
-                choseeId: null
+                choseeName: null
               }
             })
           );
