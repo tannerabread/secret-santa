@@ -37,6 +37,17 @@ export default function Home() {
   })
   const selectRef = useRef()
   const [chosen, setChosen] = useState()
+  const [background, setBackground] = useState('defaultBackground')
+
+  function changeBackground() {
+    if (background === 'defaultBackground') {
+      setBackground('secondBackground')
+    } else if (background === 'secondBackground') {
+      setBackground('thirdBackground')
+    } else {
+      setBackground('defaultBackground')
+    }
+  }
 
   function forceSixth(remaining, selectedName, selectedUser) {
     remaining = remaining.filter(
@@ -142,7 +153,7 @@ export default function Home() {
   if (error) return <div>Error: {error.message}</div>
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${styles[background]}`}>
       <Head>
         <title>Tanner 2023 Secret Santa</title>
       </Head>
@@ -171,8 +182,12 @@ export default function Home() {
           <button className={styles.button} onClick={handleClick}>
             PICK MY PERSON
           </button>
+          <button className={styles.button} onClick={changeBackground}>
+            Change Background
+          </button>
           <h2 className={styles.description}>
-            You will be Santa for: {chosen}
+            You will be Santa for:{' '}
+            <span className={styles.choice}>{chosen}</span>
           </h2>
         </div>
       </main>

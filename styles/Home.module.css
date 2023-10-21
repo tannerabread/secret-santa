@@ -1,6 +1,5 @@
 .container {
   padding: 1.5rem;
-  background: url('../assets/2023-dalle-3.png') no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;
@@ -12,6 +11,21 @@
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
   text-align: center;
+}
+
+.defaultBackground {
+  background: url('../assets/2023-dalle-3.png') no-repeat center center;
+  background-size: cover;
+}
+
+.secondBackground {
+  background: url('../assets/abstract-tree-1.png') no-repeat center center;
+  background-size: cover;
+}
+
+.thirdBackground {
+  background: url('../assets/abstract-tree-2.png') no-repeat center center;
+  background-size: cover;
 }
 
 .main {
@@ -95,7 +109,41 @@
   transform: scale(1.05);
 }
 
+.choice {
+  display: inline-block;
+  font-size: calc(1.5rem + 2vw);
+  animation: move 1.5s infinite alternate;
+  -webkit-text-stroke: 0.3px rgb(53, 220, 20);
+  text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px gold, 0 0 40px gold, 0 0 50px gold, 0 0 60px gold;
+}
+
+@keyframes move {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}
+
 @media (max-width: 600px) {
+  .title {
+    font-size: calc(2rem + 2vw); /* Increased size for mobile */
+  }
+
+  .description {
+    font-size: calc(0.6rem + 1vw); /* Increased size for mobile */
+  }
+
+  .list {
+    font-size: calc(0.6rem + 1vw); /* Increased size for mobile */
+    width: 100%;
+  }
+
+  .button {
+    font-size: calc(0.9rem + 1vw); /* Increased size for mobile */
+  }
+
   .grid {
     gap: 1rem;
   }
@@ -103,9 +151,5 @@
   .row {
     flex-direction: column;
     gap: 1rem;
-  }
-
-  .list {
-    width: 100%;
   }
 }
