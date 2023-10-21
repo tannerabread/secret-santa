@@ -1,128 +1,137 @@
 import Head from 'next/head'
-import React from 'react'
-import { useState } from 'react'
-import useSWR from 'swr'
+import React, { useRef, useState } from 'react'
+import { useQuery, useMutation, gql } from '@apollo/client'
 import styles from '../styles/Home.module.css'
+import client from '../helpers/apolloClient'
 
-const fetcher = (url) => fetch(url).then((r) => r.json())
+const ALL_USERS_QUERY = gql`
+  query {
+    allUsers {
+      name
+      coupleId
+      partnerId
+      hasChosen
+      hasBeenChosen
+      choseeName
+    }
+  }
+`
+
+const UPDATE_USER_CHOICE_MUTATION = gql`
+  mutation UpdateUserChoice($name: String!, $choseeName: String!) {
+    updateUserChoice(name: $name, choseeName: $choseeName) {
+      hasChosen
+      choseeName
+    }
+  }
+`
 
 export default function Home() {
-  const { data: people, error } = useSWR('/api', fetcher)
-  const selectRef = React.createRef()
+  const { data, loading, error } = useQuery(ALL_USERS_QUERY, {
+    client,
+    fetchPolicy: 'network-only',
+  })
+  const people = data?.allUsers || []
+  const [updateUserChoice] = useMutation(UPDATE_USER_CHOICE_MUTATION, {
+    client,
+  })
+  const selectRef = useRef()
   const [chosen, setChosen] = useState()
+  const [background, setBackground] = useState('defaultBackground')
 
-  function forceFourth(remaining, id) {
-    // check if one couple has had no choices yet
-    remaining = remaining.filter((p) => p.id !== id && p.partnerId !== id)
+  function changeBackground() {
+    if (background === 'defaultBackground') {
+      setBackground('secondBackground')
+    } else if (background === 'secondBackground') {
+      setBackground('thirdBackground')
+    } else {
+      setBackground('defaultBackground')
+    }
+  }
+
+  function forceSixth(remaining, selectedName, selectedUser) {
+    remaining = remaining.filter(
+      (p) => p.name !== selectedName && p.partnerId !== selectedUser.partnerId
+    )
     let coupleHash = {}
     for (let i = 0; i < remaining.length; i++) {
       if (remaining[i].partnerId in coupleHash) {
-        return [list[remaining[i].id], list[remaining[i].partnerId]]
+        let person1 = people.find(
+          (person) => person.partnerId === remaining[i].partnerId
+        )
+        let person2 = people.find((person) => person.name === remaining[i].name)
+        return [person1, person2]
       }
-      coupleHash[remaining[i].partnerId] = remaining[i].partnerid
+      coupleHash[remaining[i].partnerId] = remaining[i].name
     }
     return remaining
   }
 
-  // also forceFifth because edge cases
-  function forceSixth(remaining, id) {
-    // check if one couple has not picked yet
-    // if so, check that if this sixth person picks, it leaves the last 2 with valid choices
-    // if this sixth person is the last of the first 3 couples, and the last couple that hasn't chosen yet
-    //    still has an available chosen, the sixth person must pick the available one from that couple
-    // check if two of the entries are from the same couple
-    let remainingToPick = people.filter((p) => !p.hasChosen && p.id !== id)
-    // if 2 of these ^^ have the same coupleId and one has not been chosen, must return that one
+  function forceEighth(remaining, selectedName) {
+    let remainingToPick = remaining.filter(
+      (p) => !p.hasChosen && p.name !== selectedName
+    )
     let coupleHash = {}
     for (let i = 0; i < remainingToPick.length; i++) {
       if (remainingToPick[i].coupleId in coupleHash) {
         let person1 = remainingToPick[i]
-        let person2 = remainingToPick[coupleHash[remainingToPick[i].coupleId]]
-        if (!person1.hasBeenChosen && person1.id !== id) {
+        let person2 = people.find(
+          (person) => person.name === coupleHash[remainingToPick[i].coupleId]
+        )
+        if (!person1.hasBeenChosen && person1.name !== selectedName) {
           return [person1]
-        } else if (!person2.hasBeenChosen && person2.id !== id) {
+        } else if (!person2.hasBeenChosen && person2.name !== selectedName) {
           return [person2]
         }
       }
-      coupleHash[remainingToPick[i].coupleId] = i
+      coupleHash[remainingToPick[i].coupleId] = remainingToPick[i].name
     }
 
-    // edge case where 2 people are left unchosen from same couple
-    // one has chosen and other has not
-    // one of them must be chosen on 6th 
     let remainingHash = {}
-    remaining = remaining.filter(p => p.id !== id)
     for (let i = 0; i < remaining.length; i++) {
       if (remaining[i].coupleId in remainingHash) {
-        return [remaining[i], remaining[remainingHash[remaining[i].coupleId]]]
+        let person1 = remaining[i]
+        let person2 = people.find(
+          (person) => person.name === remainingHash[remaining[i].coupleId]
+        )
+        return [person1, person2]
       }
-      remainingHash[remaining[i].coupleId] = i
-    }
-    return remaining
-  }
-
-  // force 7th if one person hasn't picked and hasn't been picked
-  function forceSeventh(remaining, id) {
-    // check if out of the remaining there is one person who hasn't picked,
-    //    isn't the person picking,
-    //    and hasn't been chosen (hence in remaining)
-    remaining = remaining.filter(p => p.id !== id && p.coupleId !== people[id].coupleId)
-    let person
-    if (remaining.length === 2) {
-      if (
-        !remaining[0].hasChosen &&
-        !remaining[0].hasBeenChosen &&
-        remaining[0].id !== id &&
-        remaining[0].coupleId !== people[id].coupleId
-      ) {
-        return [remaining[0]]
-      } else if (
-        !remaining[1].hasChosen &&
-        !remaining[1].hasBeenChosen &&
-        remaining[1].id !== id &&
-        remaining[1].coupleId !== people[id].coupleId
-      ) {
-        return [remaining[1]]
-      }
+      remainingHash[remaining[i].coupleId] = remaining[i].name
     }
     return remaining
   }
 
   function handleClick() {
-    // find current id for who is picking and the remaining people that have not been chosen
-    let id = selectRef.current.selectedIndex
-    let remaining = people.filter((p) => !p.hasBeenChosen)
-    if (people[id].hasChosen) {
+    let selectedName = selectRef.current.value
+    let selectedUser = people.find((p) => p.name === selectedName)
+
+    let remaining = people.filter((p) => {
+      return (
+        !p.hasBeenChosen &&
+        p.name !== selectedName &&
+        p.partnerId !== selectedUser.partnerId
+      )
+    })
+
+    if (selectedUser.hasChosen) {
       setChosen('YOU HAVE ALREADY PICKED')
       return
     }
 
     let allowableList
-    // edge case for 4th pick
     if (remaining.length === 5) {
-      allowableList = forceFourth(remaining, id)
-      allowableList = allowableList.filter(
-        (p) => p.coupleId !== people[id].coupleId
+      allowableList = forceSixth(remaining, selectedName, selectedUser)
+    } else if (remaining.length === 3) {
+      allowableList = forceEighth(remaining, selectedName)
+    } else {
+      allowableList = remaining.filter(
+        (p) => selectedUser.coupleId !== p.coupleId
       )
     }
-    // edge case for 5th/6th pick
-    else if (remaining.length === 4 || remaining.length === 3) {
-      allowableList = forceSixth(remaining, id)
-      console.log('initial allowableList', allowableList)
-      allowableList = allowableList.filter(
-        (p) => p.coupleId !== people[id].coupleId
-      )
-    } else if (remaining.length === 2) {
-      allowableList = forceSeventh(remaining, id)
-    }
-    // every other option
-    else {
-      allowableList = people.filter(
-        (p) => people[id].coupleId !== p.coupleId && !p.hasBeenChosen
-      )
-    }
-    console.log('allowableList', allowableList)
-    // chooses a "random" person from those that are left
+
+    // Double-check the allowableList
+    allowableList = allowableList.filter((p) => !p.hasBeenChosen)
+
     let chosenOne
     if (allowableList.length === 1) {
       chosenOne = allowableList[0]
@@ -130,49 +139,31 @@ export default function Home() {
       let random = Math.floor(Math.random() * allowableList.length)
       chosenOne = allowableList[random]
     }
-    console.log('chosenOne', chosenOne)
-    setChosen(chosenOne.santa)
+    setChosen(chosenOne.name)
 
-    // put request parameter update for the person that just picked
-    let chooserParams = {}
-    chooserParams._id = people[id]._id
-    chooserParams.hasChosen = true
-    chooserParams.chosee = people[chosenOne.id].santa
-    chooserParams.choseeCoupleId = people[chosenOne.id].coupleId
-    postData(`/api`, chooserParams)
-
-    // put request parameter update for the person that was chosen
-    let chosenParams = {}
-    chosenParams._id = chosenOne._id
-    chosenParams.hasBeenChosen = true
-    console.log('chosenParams', chosenParams)
-    postData(`/api`, chosenParams)
-  }
-
-  async function postData(url = '', data = {}) {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    updateUserChoice({
+      variables: {
+        name: selectedUser.name,
+        choseeName: chosenOne.name,
       },
-      body: JSON.stringify(data),
     })
-    return response.json()
   }
 
-  if (!people) return <div>Loading...</div>
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${styles[background]}`}>
       <Head>
-        <title>Tanner 2021 Secret Santa</title>
+        <title>Tanner 2023 Secret Santa</title>
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>Tanner 2021 Secret Santa Picker!</h1>
-
+        <h1 className={styles.title}>
+          Tanner Family! 2023!! Secret Santa Picker!!!
+        </h1>
         <p className={styles.description}>
-          {`Guaranteed to not let you pick your own partner's name!`}
+          Guaranteed to not let you pick your own partners name!
         </p>
 
         <div className={styles.grid}>
@@ -181,9 +172,9 @@ export default function Home() {
               Your name:{' '}
             </label>
             <select className={styles.list} name="list" ref={selectRef}>
-              {people.map((p) => (
-                <option className={styles.option} key={p.santa} value={p.santa}>
-                  {p.santa}
+              {data.allUsers.map((p) => (
+                <option className={styles.option} key={p.name} value={p.name}>
+                  {p.name}
                 </option>
               ))}
             </select>
@@ -191,8 +182,12 @@ export default function Home() {
           <button className={styles.button} onClick={handleClick}>
             PICK MY PERSON
           </button>
+          <button className={styles.button} onClick={changeBackground}>
+            Change Background
+          </button>
           <h2 className={styles.description}>
-            You will be Santa for: {chosen}
+            You will be Santa for:{' '}
+            <span className={styles.choice}>{chosen}</span>
           </h2>
         </div>
       </main>

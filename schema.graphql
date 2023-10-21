@@ -1,22 +1,19 @@
-# create an object to store user data
 type User {
-  # fields id, coupleId, partnerId, choseeCoupleId will be of type int
-  # fields santa, chosee will be of type String
-  # fields hasChosen, hasBeenChosen are of type Bool
-  id: Int
-  coupleId: Int
-  partnerId: Int
-  santa: String
-  hasChosen: Boolean
-  hasBeenChosen: Boolean
-  chosee: String
-  choseeCoupleId: Int
+  name: String!
+  coupleId: Int!
+  partnerId: ID
+  hasChosen: Boolean!
+  hasBeenChosen: Boolean!
+  choseeName: String
 }
 
-# create queries to search for all users
-#   and for user by id
 type Query {
-  allUsers: [User]!
-  user(id: Int): User
-  userByName(santa: String): [User]!
+  allUsers: [User!]!
+  userByName(name: String!): User
+}
+
+type Mutation {
+  createUser(name: String!, coupleId: Int!): User! @resolver(name: "createUser")
+  updateUserChoice(name: String!, choseeName: String!): User! @resolver(name: "updateUserChoice")
+  resetChoices: Boolean! @resolver(name: "resetChoices")
 }
