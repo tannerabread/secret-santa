@@ -70,28 +70,30 @@ const resolvers = {
       // This is a bit more complex as it involves multiple operations.
       // For simplicity, I'm providing a basic version. You might need to add more checks and operations.
       try {
-        const user = await client.query(
-          q.Get(q.Ref(q.Collection('User'), name))
+        const userRef = await client.query(
+          q.Match(q.Index('userByName'), name)
         );
-
-        const chosee = await client.query(
-          q.Get(q.Ref(q.Collection('User'), choseeName))
+        const user = await client.query(q.Get(userRef));
+        
+        const choseeRef = await client.query(
+          q.Match(q.Index('userByName'), choseeName)
         );
+        const chosee = await client.query(q.Get(choseeRef));      
 
         if (chosee.data.hasBeenChosen) throw new Error("Chosee has already been chosen by someone else");
         if (user.data.coupleId === chosee.data.coupleId) throw new Error("Cannot choose your partner");
 
         const updatedUser = await client.query(
-          q.Update(q.Ref(q.Collection('User'), name), {
+          q.Update(user.ref, {
             data: {
               hasChosen: true,
               choseeName: choseeName
             }
           })
         );
-
+        
         await client.query(
-          q.Update(q.Ref(q.Collection('User'), choseeName), {
+          q.Update(chosee.ref, {
             data: {
               hasBeenChosen: true
             }
@@ -106,10 +108,15 @@ const resolvers = {
     },
     resetChoices: async () => {
       try {
-        const users = await resolvers.Query.allUsers();
-        for (let user of users) {
-          await client.query(
-            q.Update(q.Ref(q.Collection('User'), user.id), {
+        // Retrieve all user references
+        const userRefs = await client.query(
+          q.Paginate(q.Documents(q.Collection('User')))
+        );
+    
+        // Loop through each reference and update the user data
+        const updatePromises = userRefs.data.map(userRef => {
+          return client.query(
+            q.Update(userRef, {
               data: {
                 hasChosen: false,
                 hasBeenChosen: false,
@@ -117,12 +124,17 @@ const resolvers = {
               }
             })
           );
-        }
+        });
+    
+        // Wait for all updates to complete
+        await Promise.all(updatePromises);
+    
         return true;
       } catch (error) {
+        console.error("Error in resetChoices:", error);
         throw new Error("Error resetting choices: " + error.message);
       }
-    }
+    }    
   }
 };
 

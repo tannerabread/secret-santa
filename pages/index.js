@@ -11,61 +11,129 @@ const ALL_USERS_QUERY = gql`
       coupleId
       partnerId
       hasChosen
-      choseeId
+      hasBeenChosen
+      choseeName
     }
   }
 `
 
 const UPDATE_USER_CHOICE_MUTATION = gql`
-  mutation UpdateUserChoice($userId: ID!, $choseeId: ID!) {
-    updateUserChoice(userId: $userId, choseeId: $choseeId) {
-      id
+  mutation UpdateUserChoice($name: String!, $choseeName: String!) {
+    updateUserChoice(name: $name, choseeName: $choseeName) {
       hasChosen
-      choseeId
+      choseeName
     }
   }
 `
 
 export default function Home() {
-  const { data, loading, error } = useQuery(ALL_USERS_QUERY, { client })
+  const { data, loading, error } = useQuery(ALL_USERS_QUERY, {
+    client,
+    fetchPolicy: 'network-only',
+  })
+  const people = data?.allUsers || []
   const [updateUserChoice] = useMutation(UPDATE_USER_CHOICE_MUTATION, {
     client,
   })
   const selectRef = useRef()
   const [chosen, setChosen] = useState()
 
+  function forceSixth(remaining, selectedName, selectedUser) {
+    remaining = remaining.filter(
+      (p) => p.name !== selectedName && p.partnerId !== selectedUser.partnerId
+    )
+    let coupleHash = {}
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i].partnerId in coupleHash) {
+        let person1 = people.find(
+          (person) => person.partnerId === remaining[i].partnerId
+        )
+        let person2 = people.find((person) => person.name === remaining[i].name)
+        return [person1, person2]
+      }
+      coupleHash[remaining[i].partnerId] = remaining[i].name
+    }
+    return remaining
+  }
+
+  function forceEighth(remaining, selectedName) {
+    let remainingToPick = remaining.filter(
+      (p) => !p.hasChosen && p.name !== selectedName
+    )
+    let coupleHash = {}
+    for (let i = 0; i < remainingToPick.length; i++) {
+      if (remainingToPick[i].coupleId in coupleHash) {
+        let person1 = remainingToPick[i]
+        let person2 = people.find(
+          (person) => person.name === coupleHash[remainingToPick[i].coupleId]
+        )
+        if (!person1.hasBeenChosen && person1.name !== selectedName) {
+          return [person1]
+        } else if (!person2.hasBeenChosen && person2.name !== selectedName) {
+          return [person2]
+        }
+      }
+      coupleHash[remainingToPick[i].coupleId] = remainingToPick[i].name
+    }
+
+    let remainingHash = {}
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i].coupleId in remainingHash) {
+        let person1 = remaining[i]
+        let person2 = people.find(
+          (person) => person.name === remainingHash[remaining[i].coupleId]
+        )
+        return [person1, person2]
+      }
+      remainingHash[remaining[i].coupleId] = remaining[i].name
+    }
+    return remaining
+  }
+
   function handleClick() {
-    const selectedName = selectRef.current.value // Get the name from the selected option value
-    const currentUser = data.allUsers.find((user) => user.name === selectedName) // Find the user by name
-    if (currentUser.hasChosen) {
+    let selectedName = selectRef.current.value
+    let selectedUser = people.find((p) => p.name === selectedName)
+
+    let remaining = people.filter((p) => {
+      return (
+        !p.hasBeenChosen &&
+        p.name !== selectedName &&
+        p.partnerId !== selectedUser.partnerId
+      )
+    })
+
+    if (selectedUser.hasChosen) {
       setChosen('YOU HAVE ALREADY PICKED')
       return
     }
 
-    // Filter out the current user by name, their partner by coupleId, and anyone who has already been chosen
-    const allowableList = data.allUsers.filter(
-      (p) =>
-        p.name !== currentUser.name &&
-        p.coupleId !== currentUser.coupleId &&
-        !p.hasBeenChosen
-    )
-
-    // If no one is left to choose, set the message and return
-    if (allowableList.length === 0) {
-      setChosen('No available person to pick.')
-      return
+    let allowableList
+    if (remaining.length === 5) {
+      allowableList = forceSixth(remaining, selectedName, selectedUser)
+    } else if (remaining.length === 3) {
+      allowableList = forceEighth(remaining, selectedName)
+    } else {
+      allowableList = remaining.filter(
+        (p) => selectedUser.coupleId !== p.coupleId
+      )
     }
 
-    // Randomly select a user from the allowable list
-    const chosenOne =
-      allowableList[Math.floor(Math.random() * allowableList.length)]
+    // Double-check the allowableList
+    allowableList = allowableList.filter((p) => !p.hasBeenChosen)
 
+    let chosenOne
+    if (allowableList.length === 1) {
+      chosenOne = allowableList[0]
+    } else {
+      let random = Math.floor(Math.random() * allowableList.length)
+      chosenOne = allowableList[random]
+    }
     setChosen(chosenOne.name)
 
     updateUserChoice({
       variables: {
-        userId: currentUser.id,
-        choseeId: chosenOne.id,
+        name: selectedUser.name,
+        choseeName: chosenOne.name,
       },
     })
   }
@@ -94,7 +162,7 @@ export default function Home() {
             </label>
             <select className={styles.list} name="list" ref={selectRef}>
               {data.allUsers.map((p) => (
-                <option className={styles.option} key={p.santa} value={p.santa}>
+                <option className={styles.option} key={p.name} value={p.name}>
                   {p.name}
                 </option>
               ))}
